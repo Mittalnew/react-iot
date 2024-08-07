@@ -51,24 +51,30 @@ export const signup = async (username, email, password) => {
   return response.json();
 };
 
-export const fetchNews = async () => {
+export const fetchNews = async (page = 1, limit = 9) => {
   try {
-    const token = localStorage.getItem('token'); // local storage से token प्राप्त करें
+    const token = localStorage.getItem('token'); 
     
     if (!token) {
       throw new Error('No authentication token found');
     }
 
-    const response = await fetch(`${BASE_URL}/news`, {
+    const response = await fetch(`${BASE_URL}/news?page=${page}&limit=${limit}`, {
       headers: {
-        'Authorization': `Bearer ${token}` // token को header में शामिल करें
+        'Authorization': `Bearer ${token}`
       }
     });
     
     if (response.status === 200) {
       const data = await response.json();
       console.log('Fetched news data:', data);
-      return data;
+      
+      return {
+        news: data.data,
+        count: data.count,
+        message: data.message,
+        status: data.status
+      };
     } else {
       throw new Error(`Failed to fetch news. Status: ${response.status}`);
     }

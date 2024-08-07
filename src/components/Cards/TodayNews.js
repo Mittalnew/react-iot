@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaArrowRight, FaSmile, FaMeh, FaFrown } from 'react-icons/fa';
 import { fetchNews } from '../../AuthsApi/auth';
+import Pagination from '../pagination/pagination';
+
 
 const truncateDescription = (text, wordLimit) => {
   const words = text.split(' ');
@@ -39,53 +41,48 @@ const NewsCard = ({ title, description, sentiment, url, urlToImage }) => {
 };
 
 const TodayNews = () => {
-    const [newsItems, setNewsItems] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-  
-    useEffect(() => {
-      const getNews = async () => {
-        try {
-          const data = await fetchNews();
-          console.log('Received data:', data);  // लॉग प्राप्त डेटा
-          if (Array.isArray(data)) {
-            setNewsItems(data);
-          } else if (data && typeof data === 'object') {
-            // यदि डेटा एक object है, तो उसके मुख्य array को ढूंढें
-            const newsArray = Object.values(data).find(item => Array.isArray(item));
-            if (newsArray) {
-              setNewsItems(newsArray);
-            } else {
-              throw new Error('News data is not in expected format');
-            }
-          } else {
-            throw new Error('Received data is not an array or object');
-          }
-          setLoading(false);
-        } catch (err) {
-          console.error('Error in getNews:', err);  // लॉग त्रुटि
-          setError(err.message);
-          setLoading(false);
-        }
-      };
-  
-      getNews();
-    }, []);
-  
-    console.log('Current newsItems:', newsItems);  // लॉग वर्तमान newsItems
-  
-    if (loading) {
-      return <div className="text-center mt-10">Loading news...</div>;
+  const [newsItems, setNewsItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [itemsPerPage] = useState(9);
+
+  const getNews = useCallback(async (page) => {
+    setLoading(true);
+    try {
+      const data = await fetchNews(page, itemsPerPage);
+      setNewsItems(data.news);
+      setTotalPages(Math.ceil(data.count / itemsPerPage));
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
     }
-  
-    if (error) {
-      return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
-    }
-  
-    return (
-      <div className="max-w-6xl mx-auto my-10 px-4">
-        <h2 className="text-3xl font-bold mb-6 text-gray-800">Today's News</h2>
-        {Array.isArray(newsItems) && newsItems.length > 0 ? (
+  }, [itemsPerPage]);
+
+  useEffect(() => {
+    getNews(currentPage);
+  }, [currentPage, getNews]);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo(0, 0); // Scroll to top when page changes
+  };
+
+  if (loading) {
+    return <div className="text-center mt-10">Loading news...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
+  }
+
+  return (
+    <div id="todayNews" className="max-w-6xl mx-auto my-10 px-4 pt-20">
+      <h2 className="text-3xl font-bold mb-6 text-gray-800">Today's News</h2>
+      {newsItems.length > 0 ? (
+        <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {newsItems.map((item) => (
               <NewsCard 
@@ -98,11 +95,21 @@ const TodayNews = () => {
               />
             ))}
           </div>
-        ) : (
-          <div className="text-center mt-10">No news items available</div>
-        )}
-      </div>
-    );
-  };
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </>
+      ) : (
+        <div className="text-center mt-10">No news items available</div>
+      )}
+    </div>
+  );
+};
 
 export default TodayNews;
+
+
+
+
