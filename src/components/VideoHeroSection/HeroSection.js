@@ -19,10 +19,10 @@ const HeroSection = () => {
 
       {/* Content */}
       <div className="relative z-30 text-white text-center">
-        <h1 className="text-5xl font-bold mb-4">Welcome to MyApp</h1>
-        <p className="text-xl mb-8">Discover amazing features and possibilities</p>
+        <h1 className="text-5xl font-bold mb-4">Welcome to TODO+</h1>
+        <p className="text-xl mb-8">Discover todo's and latest news</p>
         <button className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-full transition duration-300">
-          Get Started
+          lets go to add some todo's 
         </button>
       </div>
     </div>

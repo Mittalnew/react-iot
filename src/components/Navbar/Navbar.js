@@ -28,7 +28,7 @@ const Navbar = () => {
     >
       {/* Logo */}
       <div className="flex items-center">
-        <h1 className="text-3xl font-bold">MyApp</h1>
+        <h1 className="text-3xl font-bold">TO<sapn className="text-[#19f754]">DO</sapn><span className='text-[50px] text-[#fff]'>+</span></h1>
       </div>
 
       {/* Center Tabs */}
